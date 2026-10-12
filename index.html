@@ -115,10 +115,6 @@
 </head>
 
 <body>
-  <!-- Background Ambient Aura -->
-  <div class="ambient-glow glow-1" aria-hidden="true"></div>
-  <div class="ambient-glow glow-2" aria-hidden="true"></div>
-  <div class="ambient-glow glow-3" aria-hidden="true"></div>
   <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
 
   <div class="app-shell">
@@ -499,13 +495,13 @@
             <div class="status-filter-pills" role="tablist">
               <button class="status-pill active" data-view="all">All <span class="pill-count"
                   id="countAll">455</span></button>
-              <button class="status-pill" data-view="pending">⏳ Pending <span class="pill-count"
+              <button class="status-pill" data-view="pending">Pending <span class="pill-count"
                   id="countPending">455</span></button>
-              <button class="status-pill" data-view="done">✅ Solved <span class="pill-count"
+              <button class="status-pill" data-view="done">Solved <span class="pill-count"
                   id="countDone">0</span></button>
-              <button class="status-pill" data-view="starred">⭐ Starred <span class="pill-count"
+              <button class="status-pill" data-view="starred">Starred <span class="pill-count"
                   id="countStarred">0</span></button>
-              <button class="status-pill" data-view="notes">📝 Notes <span class="pill-count"
+              <button class="status-pill" data-view="notes">Notes <span class="pill-count"
                   id="countNotes">0</span></button>
             </div>
 
@@ -641,10 +637,13 @@
 
           <!-- Pro Tip / Mindset Card -->
           <div class="rail-card quote-card">
-            <div class="quote-icon">💡</div>
+            <div class="quote-icon">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+              </svg>
+            </div>
             <div class="quote-body">
-              <p id="motivationalQuote">"Consistent small daily sessions compound. Master the pattern, not just the
-                solution."</p>
+              <p id="motivationalQuote">"Consistent small daily sessions compound. Master the pattern, not just the solution."</p>
               <button class="new-quote-btn" id="newQuoteBtn" title="Get another tip">Next Tip ↻</button>
             </div>
           </div>
