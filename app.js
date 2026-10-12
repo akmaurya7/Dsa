@@ -450,7 +450,7 @@ function getFilteredProblems() {
 }
 
 // --- Problem Row Markup ---
-function renderProblemRow(p) {
+function renderProblemRow(p, isGrouped = false) {
   const isDone = !!state.done[p.id];
   const isStarred = !!state.starred[p.id];
   const hasNote = !!state.notes[p.id];
@@ -458,6 +458,38 @@ function renderProblemRow(p) {
   const leetcodeUrl = safeExternalUrl(p.leetcode);
   const gfgUrl = safeExternalUrl(p.gfg);
   const youtubeUrl = safeExternalUrl(p.youtube);
+
+  // Consistent 3-slot platform link structure across all rows (YT -> LC -> GFG)
+  const ytSlot = youtubeUrl
+    ? `<a class="platform-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener noreferrer" title="Watch Striver's Solution on YouTube">${ICONS.youtube}<span>YT</span></a>`
+    : `<span class="platform-link disabled" aria-disabled="true" title="No YouTube video for this question">${ICONS.youtube}<span>YT</span></span>`;
+
+  const lcSlot = leetcodeUrl
+    ? `<a class="platform-link leetcode" href="${escapeHtml(leetcodeUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on LeetCode">${ICONS.leetcode}<span>LC</span></a>`
+    : `<span class="platform-link disabled" aria-disabled="true" title="No direct LeetCode link available">${ICONS.leetcode}<span>LC</span></span>`;
+
+  const gfgSlot = gfgUrl
+    ? `<a class="platform-link gfg" href="${escapeHtml(gfgUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on GeeksforGeeks">${ICONS.gfg}<span>GFG</span></a>`
+    : `<span class="platform-link disabled" aria-disabled="true" title="No direct GeeksforGeeks link available">${ICONS.gfg}<span>GFG</span></span>`;
+
+  // Subtopic & Notes Meta below title:
+  // In grouped accordion mode, the subtopic name is already displayed in the accordion header,
+  // so repeating it under every single problem creates ugly, multiline clutter.
+  // We only show the subtopic pill in flat mode or when search is active.
+  const isSearchActive = Boolean(els.searchInput && els.searchInput.value.trim());
+  const showSubtopicTag = (!isGrouped || isSearchActive) && p.subtopic;
+
+  const metaItems = [];
+  if (showSubtopicTag) {
+    metaItems.push(`<span class="subtopic-tag">${escapeHtml(p.subtopic)}</span>`);
+  }
+  if (hasNote) {
+    metaItems.push(`<span class="note-pill" data-action="open-note" title="View/edit saved study note">${ICONS.noteIcon}<span>Note saved</span></span>`);
+  }
+
+  const metaHtml = metaItems.length > 0
+    ? `<div class="problem-meta-tags">${metaItems.join('')}</div>`
+    : '';
 
   return `
     <article class="problem-row ${isDone ? 'is-done' : ''}" data-id="${p.id}" tabindex="0">
@@ -467,18 +499,16 @@ function renderProblemRow(p) {
       <span class="problem-id">#${String(p.id).padStart(3, '0')}</span>
       <div class="problem-info-cell">
         <div class="problem-title-text" data-action="open-note" title="Click to view/edit notes">${escapeHtml(p.name)}</div>
-        <div class="problem-meta-tags">
-          ${p.subtopic ? `<span class="subtopic-tag">${escapeHtml(p.subtopic)}</span>` : ''}
-        </div>
+        ${metaHtml}
       </div>
       <div class="diff-badge ${diffClass}">
         <span class="dot"></span>
         <span>${p.difficulty}</span>
       </div>
       <div class="problem-links-cell">
-        ${youtubeUrl ? `<a class="platform-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener noreferrer" title="Watch Striver's Solution Video on YouTube">${ICONS.youtube}<span>YT</span></a>` : ''}
-        ${leetcodeUrl ? `<a class="platform-link leetcode" href="${escapeHtml(leetcodeUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on LeetCode">${ICONS.leetcode}<span>LC</span></a>` : ''}
-        ${gfgUrl ? `<a class="platform-link gfg" href="${escapeHtml(gfgUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on GeeksforGeeks">${ICONS.gfg}<span>GFG</span></a>` : ''}
+        ${ytSlot}
+        ${lcSlot}
+        ${gfgSlot}
       </div>
       <div class="problem-actions-cell">
         <button class="action-icon-btn star-btn ${isStarred ? 'is-starred' : ''}" data-action="toggle-star" title="${isStarred ? 'Remove from starred' : 'Star for revision'}">
@@ -531,7 +561,7 @@ function renderGroupedList(list, openTopicNames = new Set(), openSubtopicKeys = 
             <small>${subDone}/${subProblems.length}</small>
           </summary>
           <div class="group-problems-list">
-            ${subProblems.map(renderProblemRow).join('')}
+            ${subProblems.map(p => renderProblemRow(p, true)).join('')}
           </div>
         </details>
       `;
@@ -565,7 +595,7 @@ function renderFlatList(list) {
   return `
     <div class="topic-group" style="padding: 6px 0;">
       <div class="group-problems-list">
-        ${list.map(renderProblemRow).join('')}
+        ${list.map(p => renderProblemRow(p, false)).join('')}
       </div>
     </div>
   `;
