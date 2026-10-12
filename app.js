@@ -27,6 +27,9 @@ const problems = (window.DSA_PROBLEMS || []).map(([id, topic, subtopic, name, di
   leetcode: leetcode || '',
   gfg: gfg || ''
 }));
+const problemIds = new Set(problems.map(problem => String(problem.id)));
+const MAX_NOTE_LENGTH = 5000;
+const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
 
 const storeKey = 'dsa-practice-board-v1';
 let state = loadState();
@@ -85,22 +88,39 @@ const topicIcons = {
 // --- State Persistence ---
 function loadState() {
   try {
-    const data = JSON.parse(localStorage.getItem(storeKey)) || {};
-    return {
-      done: data.done || {},
-      notes: data.notes || {},
-      starred: data.starred || {},
-      theme: data.theme || 'dark',
-      layout: data.layout || 'grouped'
-    };
+    return sanitizeState(JSON.parse(localStorage.getItem(storeKey)) || {});
   } catch (e) {
     return { done: {}, notes: {}, starred: {}, theme: 'dark', layout: 'grouped' };
   }
 }
 
+function sanitizeState(data) {
+  const source = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+  const booleanMap = value => Object.fromEntries(
+    Object.entries(value && typeof value === 'object' && !Array.isArray(value) ? value : {})
+      .filter(([id, enabled]) => problemIds.has(id) && enabled === true)
+  );
+  const notes = Object.fromEntries(
+    Object.entries(source.notes && typeof source.notes === 'object' && !Array.isArray(source.notes) ? source.notes : {})
+      .filter(([id, note]) => problemIds.has(id) && typeof note === 'string' && note.trim())
+      .map(([id, note]) => [id, note.trim().slice(0, MAX_NOTE_LENGTH)])
+  );
+  return {
+    done: booleanMap(source.done),
+    notes,
+    starred: booleanMap(source.starred),
+    theme: source.theme === 'light' ? 'light' : 'dark',
+    layout: source.layout === 'flat' ? 'flat' : 'grouped'
+  };
+}
+
 function saveLocalStateOnly() {
   state.layout = layoutMode;
-  localStorage.setItem(storeKey, JSON.stringify(state));
+  try {
+    localStorage.setItem(storeKey, JSON.stringify(sanitizeState(state)));
+  } catch (error) {
+    showToast('Local storage is full; export a backup and clear space.', '⚠️');
+  }
 }
 
 function saveState() {
@@ -329,6 +349,16 @@ function escapeHtml(value) {
   }[c]));
 }
 
+function safeExternalUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  try {
+    const url = new URL(value, window.location.origin);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
 // --- Render Sidebar Navigation ---
 function renderNav() {
   const filterTerm = topicFilterQuery.trim().toLowerCase();
@@ -423,6 +453,8 @@ function renderProblemRow(p) {
   const isStarred = !!state.starred[p.id];
   const hasNote = !!state.notes[p.id];
   const diffClass = p.difficulty.toLowerCase();
+  const leetcodeUrl = safeExternalUrl(p.leetcode);
+  const gfgUrl = safeExternalUrl(p.gfg);
 
   return `
     <article class="problem-row ${isDone ? 'is-done' : ''}" data-id="${p.id}" tabindex="0">
@@ -441,8 +473,8 @@ function renderProblemRow(p) {
         <span>${p.difficulty}</span>
       </div>
       <div class="problem-links-cell">
-        ${p.leetcode ? `<a class="platform-link leetcode" href="${p.leetcode}" target="_blank" rel="noopener noreferrer" title="Solve on LeetCode">${ICONS.leetcode}<span>LC</span></a>` : ''}
-        ${p.gfg ? `<a class="platform-link gfg" href="${p.gfg}" target="_blank" rel="noopener noreferrer" title="Solve on GeeksforGeeks">${ICONS.gfg}<span>GFG</span></a>` : ''}
+        ${leetcodeUrl ? `<a class="platform-link leetcode" href="${escapeHtml(leetcodeUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on LeetCode">${ICONS.leetcode}<span>LC</span></a>` : ''}
+        ${gfgUrl ? `<a class="platform-link gfg" href="${escapeHtml(gfgUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on GeeksforGeeks">${ICONS.gfg}<span>GFG</span></a>` : ''}
       </div>
       <div class="problem-actions-cell">
         <button class="action-icon-btn star-btn ${isStarred ? 'is-starred' : ''}" data-action="toggle-star" title="${isStarred ? 'Remove from starred' : 'Star for revision'}">
@@ -677,7 +709,7 @@ function closeNoteModal() {
 
 function saveCurrentNote() {
   if (!currentNoteId) return;
-  const text = els.noteInput.value.trim();
+  const text = els.noteInput.value.trim().slice(0, MAX_NOTE_LENGTH);
   if (text) {
     state.notes[currentNoteId] = text;
     showToast('Study note saved!', '📝');
@@ -713,6 +745,8 @@ function openRandomChallenge() {
   const randomPick = pool[Math.floor(Math.random() * pool.length)];
 
   if (!randomPick) return;
+  const leetcodeUrl = safeExternalUrl(randomPick.leetcode);
+  const gfgUrl = safeExternalUrl(randomPick.gfg);
 
   els.randomCardContent.innerHTML = `
     <div class="rand-title">#${randomPick.id} · ${escapeHtml(randomPick.name)}</div>
@@ -725,8 +759,8 @@ function openRandomChallenge() {
       </span>
     </div>
     <div class="problem-links-cell" style="margin-top: 8px;">
-      ${randomPick.leetcode ? `<a class="platform-link leetcode" href="${randomPick.leetcode}" target="_blank" rel="noopener noreferrer">${ICONS.leetcode} Solve on LeetCode</a>` : ''}
-      ${randomPick.gfg ? `<a class="platform-link gfg" href="${randomPick.gfg}" target="_blank" rel="noopener noreferrer">${ICONS.gfg} Solve on GFG</a>` : ''}
+      ${leetcodeUrl ? `<a class="platform-link leetcode" href="${escapeHtml(leetcodeUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.leetcode} Solve on LeetCode</a>` : ''}
+      ${gfgUrl ? `<a class="platform-link gfg" href="${escapeHtml(gfgUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.gfg} Solve on GFG</a>` : ''}
     </div>
   `;
 
@@ -800,14 +834,21 @@ function exportProgress() {
 function handleImportFile(event) {
   const file = event.target.files && event.target.files[0];
   if (!file) return;
+  if (file.size > MAX_IMPORT_BYTES) {
+    alert('Backup file is too large. The limit is 2 MB.');
+    event.target.value = '';
+    return;
+  }
   const reader = new FileReader();
   reader.onload = function (e) {
     try {
       const imported = JSON.parse(e.target.result);
-      if (imported && (imported.done || imported.notes || imported.starred)) {
-        state.done = imported.done || {};
-        state.notes = imported.notes || {};
-        state.starred = imported.starred || {};
+      if (imported && typeof imported === 'object' && !Array.isArray(imported) &&
+        (imported.done || imported.notes || imported.starred)) {
+        const importedState = sanitizeState(imported);
+        state.done = importedState.done;
+        state.notes = importedState.notes;
+        state.starred = importedState.starred;
         saveState();
         render();
         showToast('Progress successfully restored!', '🚀');
@@ -875,11 +916,14 @@ async function loadUserDataFromFirestore(user) {
     const snap = await getDoc(userRef);
 
     if (snap.exists()) {
-      const cloudData = snap.data();
+      const cloudData = sanitizeState(snap.data());
       // Merge cloud data with existing local progress (never lose user's work)
-      state.done = { ...(cloudData.done || {}), ...state.done };
-      state.notes = { ...(cloudData.notes || {}), ...state.notes };
-      state.starred = { ...(cloudData.starred || {}), ...state.starred };
+      state = sanitizeState({
+        ...state,
+        done: { ...(cloudData.done || {}), ...state.done },
+        notes: { ...(cloudData.notes || {}), ...state.notes },
+        starred: { ...(cloudData.starred || {}), ...state.starred }
+      });
 
       saveLocalStateOnly();
       render();
