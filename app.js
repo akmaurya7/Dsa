@@ -5,7 +5,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -985,18 +986,22 @@ async function handleGoogleSignIn() {
     return;
   }
   try {
-    await signInWithPopup(auth, googleProvider);
+    await signInWithRedirect(auth, googleProvider);
   } catch (err) {
-    console.error("Google sign-in error:", err);
-    if (err.code === "auth/unauthorized-domain") {
-      showToast("Domain not authorized in Firebase! Add your domain in Firebase Console.", "⚠️");
-    } else if (err.code === "auth/operation-not-allowed") {
-      showToast("Enable Google sign-in in Firebase Authentication settings.", "⚠️");
-    } else if (err.code === "auth/internal-error") {
-      showToast("Firebase setup error. Check Vercel config and Firebase authorized domains.", "⚠️");
-    } else if (err.code !== "auth/popup-closed-by-user") {
-      showToast(err.message || "Sign-in error", "⚠️");
-    }
+    showAuthError(err);
+  }
+}
+
+function showAuthError(err) {
+  console.error("Google sign-in error:", err);
+  if (err.code === "auth/unauthorized-domain") {
+    showToast("Domain not authorized in Firebase! Add your domain in Firebase Console.", "⚠️");
+  } else if (err.code === "auth/operation-not-allowed") {
+    showToast("Enable Google sign-in in Firebase Authentication settings.", "⚠️");
+  } else if (err.code === "auth/internal-error") {
+    showToast("Firebase setup error. Check Vercel config and Firebase authorized domains.", "⚠️");
+  } else if (err.code !== "auth/popup-closed-by-user") {
+    showToast(err.message || "Sign-in error", "⚠️");
   }
 }
 
@@ -1045,6 +1050,7 @@ async function initFirebase() {
         updateAuthUI(null, "offline");
       }
     });
+    getRedirectResult(auth).catch(showAuthError);
   } catch (err) {
     console.warn("Firebase initialization skipped (running locally or offline):", err);
     updateAuthUI(null, "offline");
