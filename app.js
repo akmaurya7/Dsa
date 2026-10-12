@@ -49,6 +49,7 @@ let db = null;
 let googleProvider = null;
 let currentUser = null;
 let cloudSyncTimeout = null;
+let isExplicitSignIn = false; // Tracks if user clicked the Sign In button this session
 
 // Motivational Wisdom Quotes
 const motivationalQuotes = [
@@ -944,7 +945,7 @@ function setSyncStatus(status) {
   }
 }
 
-async function loadUserDataFromFirestore(user) {
+async function loadUserDataFromFirestore(user, { showToastMessage = false } = {}) {
   if (!db || !user) return;
   try {
     setSyncStatus("syncing");
@@ -953,26 +954,40 @@ async function loadUserDataFromFirestore(user) {
 
     if (snap.exists()) {
       const cloudData = sanitizeState(snap.data());
+      const cloudDone = cloudData.done || {};
+      const cloudNotes = cloudData.notes || {};
+      const cloudStarred = cloudData.starred || {};
+
+      // Detect if local state has newer work that hasn't made it to the cloud yet
+      const localHasNewDone = Object.keys(state.done).some(id => !cloudDone[id]);
+      const localHasNewNotes = Object.keys(state.notes).some(id => !cloudNotes[id] || state.notes[id] !== cloudNotes[id]);
+      const localHasNewStarred = Object.keys(state.starred).some(id => !cloudStarred[id]);
+      const hasLocalChangesToUpload = localHasNewDone || localHasNewNotes || localHasNewStarred;
+
       // Merge cloud data with existing local progress (never lose user's work)
       state = sanitizeState({
         ...state,
-        done: { ...(cloudData.done || {}), ...state.done },
-        notes: { ...(cloudData.notes || {}), ...state.notes },
-        starred: { ...(cloudData.starred || {}), ...state.starred }
+        done: { ...cloudDone, ...state.done },
+        notes: { ...cloudNotes, ...state.notes },
+        starred: { ...cloudStarred, ...state.starred }
       });
 
       saveLocalStateOnly();
       render();
 
-      // Write merged state back to cloud so both are completely synchronized
-      await setDoc(userRef, {
-        done: state.done,
-        notes: state.notes,
-        starred: state.starred,
-        lastUpdated: new Date().toISOString()
-      }, { merge: true });
+      // Only write to cloud if local state had changes that were not yet in the cloud
+      if (hasLocalChangesToUpload) {
+        await setDoc(userRef, {
+          done: state.done,
+          notes: state.notes,
+          starred: state.starred,
+          lastUpdated: new Date().toISOString()
+        }, { merge: true });
+      }
 
-      showToast(`Welcome back, ${user.displayName || 'Learner'}! Progress synced.`, "☁️");
+      if (showToastMessage) {
+        showToast(`Welcome back, ${user.displayName || 'Learner'}! Progress synced.`, "☁️");
+      }
     } else {
       // First time sign-in: upload current local progress to cloud
       await setDoc(userRef, {
@@ -984,13 +999,17 @@ async function loadUserDataFromFirestore(user) {
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString()
       });
-      showToast(`Welcome, ${user.displayName || 'Learner'}! Progress linked to Google.`, "🚀");
+      if (showToastMessage) {
+        showToast(`Welcome, ${user.displayName || 'Learner'}! Progress linked to Google.`, "🚀");
+      }
     }
     setSyncStatus("synced");
   } catch (err) {
     console.error("Firestore sync error:", err);
     setSyncStatus("error");
-    showToast("Cloud sync notice: Please check Firestore Rules in Firebase console.", "⚠️");
+    if (showToastMessage) {
+      showToast("Cloud sync notice: Please check Firestore Rules in Firebase console.", "⚠️");
+    }
   }
 }
 
@@ -1021,8 +1040,10 @@ async function handleGoogleSignIn() {
     return;
   }
   try {
+    isExplicitSignIn = true; // Mark as explicit user sign-in action
     await signInWithPopup(auth, googleProvider);
   } catch (err) {
+    isExplicitSignIn = false;
     console.error("Google sign-in error:", err);
     if (err.code === "auth/unauthorized-domain") {
       showToast("Domain not authorized! Add your domain in Firebase Console -> Authorized domains.", "⚠️");
@@ -1037,6 +1058,7 @@ async function handleGoogleSignIn() {
 async function handleSignOut() {
   if (!auth) return;
   try {
+    isExplicitSignIn = false;
     await signOut(auth);
     showToast("Signed out. Using local storage mode.", "👋");
   } catch (err) {
@@ -1069,7 +1091,9 @@ async function initFirebase() {
       if (user) {
         currentUser = user;
         updateAuthUI(user, "syncing");
-        await loadUserDataFromFirestore(user);
+        const shouldShowToast = isExplicitSignIn;
+        isExplicitSignIn = false; // Reset flag so reloads don't trigger toast
+        await loadUserDataFromFirestore(user, { showToastMessage: shouldShowToast });
       } else {
         currentUser = null;
         updateAuthUI(null, "offline");
@@ -1275,9 +1299,9 @@ if (els.userAvatarWrap) {
 }
 
 if (els.forceSyncBtn) {
-  els.forceSyncBtn.addEventListener('click', () => {
+  els.forceSyncBtn.addEventListener('click', async () => {
     if (currentUser) {
-      loadUserDataFromFirestore(currentUser);
+      await loadUserDataFromFirestore(currentUser, { showToastMessage: true });
     }
   });
 }
