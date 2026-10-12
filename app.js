@@ -5,8 +5,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   signOut,
   onAuthStateChanged
@@ -986,7 +985,7 @@ async function handleGoogleSignIn() {
     return;
   }
   try {
-    await signInWithRedirect(auth, googleProvider);
+    await signInWithPopup(auth, googleProvider);
   } catch (err) {
     showAuthError(err);
   }
@@ -1050,7 +1049,6 @@ async function initFirebase() {
         updateAuthUI(null, "offline");
       }
     });
-    getRedirectResult(auth).catch(showAuthError);
   } catch (err) {
     console.warn("Firebase initialization skipped (running locally or offline):", err);
     updateAuthUI(null, "offline");
