@@ -18,14 +18,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // --- Data Initialization ---
-const problems = (window.DSA_PROBLEMS || []).map(([id, topic, subtopic, name, difficulty, leetcode, gfg]) => ({
+const problems = (window.DSA_PROBLEMS || []).map(([id, topic, subtopic, name, difficulty, leetcode, gfg, youtube]) => ({
   id: Number(id),
   topic: topic ? topic.trim() : 'General',
   subtopic: subtopic ? subtopic.trim() : '',
   name: name ? name.trim() : 'Problem #' + id,
   difficulty: difficulty || 'Medium',
   leetcode: leetcode || '',
-  gfg: gfg || ''
+  gfg: gfg || '',
+  youtube: youtube || ''
 }));
 const problemIds = new Set(problems.map(problem => String(problem.id)));
 const MAX_NOTE_LENGTH = 5000;
@@ -329,6 +330,7 @@ function updateConfetti() {
 
 // --- SVG Icons Helper ---
 const ICONS = {
+  youtube: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
   leetcode: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 4.818 3.559 5.874 5.874 0 0 0 3.023-.427l6.096-3.267a1.365 1.365 0 0 0 .68-1.189 1.365 1.365 0 0 0-.68-1.189l-5.184-2.78a2.122 2.122 0 0 1-.956-1.745 2.122 2.122 0 0 1 .956-1.745l4.896-4.46a1.374 1.374 0 0 0 .438-.961 1.374 1.374 0 0 0-1.374-1.374zM8.31 16.582l-3.05 1.634a3.185 3.185 0 0 1-2.615-.195 3.125 3.125 0 0 1-1.39-2.025 3.033 3.033 0 0 1-.033-1.328 2.87 2.87 0 0 1 .665-1.157l3.208-3.435 4.385 2.351a4.854 4.854 0 0 0 2.19.52 4.854 4.854 0 0 0 2.19-.52l-5.56 4.155z"/></svg>`,
   gfg: `<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.88 15.68a5.558 5.558 0 0 1-3.95 1.62c-3.13 0-5.67-2.54-5.67-5.67s2.54-5.67 5.67-5.67c1.47 0 2.81.56 3.82 1.48l-1.57 1.57a3.42 3.42 0 0 0-2.25-.85c-1.92 0-3.47 1.55-3.47 3.47s1.55 3.47 3.47 3.47c1.37 0 2.45-.73 2.89-1.77H13.5v-2.2h5.08c.07.36.1.72.1 1.11 0 1.94-.74 3.7-1.8 4.97z"/></svg>`,
   starOutline: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="1.8" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
@@ -455,6 +457,7 @@ function renderProblemRow(p) {
   const diffClass = p.difficulty.toLowerCase();
   const leetcodeUrl = safeExternalUrl(p.leetcode);
   const gfgUrl = safeExternalUrl(p.gfg);
+  const youtubeUrl = safeExternalUrl(p.youtube);
 
   return `
     <article class="problem-row ${isDone ? 'is-done' : ''}" data-id="${p.id}" tabindex="0">
@@ -473,6 +476,7 @@ function renderProblemRow(p) {
         <span>${p.difficulty}</span>
       </div>
       <div class="problem-links-cell">
+        ${youtubeUrl ? `<a class="platform-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener noreferrer" title="Watch Striver's Solution Video on YouTube">${ICONS.youtube}<span>YT</span></a>` : ''}
         ${leetcodeUrl ? `<a class="platform-link leetcode" href="${escapeHtml(leetcodeUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on LeetCode">${ICONS.leetcode}<span>LC</span></a>` : ''}
         ${gfgUrl ? `<a class="platform-link gfg" href="${escapeHtml(gfgUrl)}" target="_blank" rel="noopener noreferrer" title="Solve on GeeksforGeeks">${ICONS.gfg}<span>GFG</span></a>` : ''}
       </div>
@@ -747,6 +751,7 @@ function openRandomChallenge() {
   if (!randomPick) return;
   const leetcodeUrl = safeExternalUrl(randomPick.leetcode);
   const gfgUrl = safeExternalUrl(randomPick.gfg);
+  const youtubeUrl = safeExternalUrl(randomPick.youtube);
 
   els.randomCardContent.innerHTML = `
     <div class="rand-title">#${randomPick.id} · ${escapeHtml(randomPick.name)}</div>
@@ -759,6 +764,7 @@ function openRandomChallenge() {
       </span>
     </div>
     <div class="problem-links-cell" style="margin-top: 8px;">
+      ${youtubeUrl ? `<a class="platform-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.youtube} Watch Solution on YouTube</a>` : ''}
       ${leetcodeUrl ? `<a class="platform-link leetcode" href="${escapeHtml(leetcodeUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.leetcode} Solve on LeetCode</a>` : ''}
       ${gfgUrl ? `<a class="platform-link gfg" href="${escapeHtml(gfgUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.gfg} Solve on GFG</a>` : ''}
     </div>
