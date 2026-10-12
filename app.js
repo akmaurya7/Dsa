@@ -981,7 +981,7 @@ function syncToCloud() {
 
 async function handleGoogleSignIn() {
   if (!auth || !googleProvider) {
-    showToast("Cloud auth is active on Vercel deployment! Local mode is active.", "ℹ️");
+    showToast("Firebase sign-in is not configured. Check the deployment settings.", "⚠️");
     return;
   }
   try {
@@ -990,6 +990,10 @@ async function handleGoogleSignIn() {
     console.error("Google sign-in error:", err);
     if (err.code === "auth/unauthorized-domain") {
       showToast("Domain not authorized in Firebase! Add your domain in Firebase Console.", "⚠️");
+    } else if (err.code === "auth/operation-not-allowed") {
+      showToast("Enable Google sign-in in Firebase Authentication settings.", "⚠️");
+    } else if (err.code === "auth/internal-error") {
+      showToast("Firebase setup error. Check Vercel config and Firebase authorized domains.", "⚠️");
     } else if (err.code !== "auth/popup-closed-by-user") {
       showToast(err.message || "Sign-in error", "⚠️");
     }
@@ -1015,8 +1019,13 @@ async function initFirebase() {
       return;
     }
     const config = await res.json();
-    if (!config || !config.apiKey) {
-      console.info("Firebase: No API key found in /api/config.");
+    if (config && !config.authDomain && config.projectId) {
+      config.authDomain = `${config.projectId}.firebaseapp.com`;
+    }
+    const missingConfig = ['apiKey', 'authDomain', 'projectId', 'appId']
+      .filter(key => !config || !config[key]);
+    if (missingConfig.length) {
+      console.info("Firebase: Missing config fields:", missingConfig.join(', '));
       updateAuthUI(null, "offline");
       return;
     }

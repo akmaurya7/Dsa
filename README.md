@@ -26,3 +26,5 @@ Then visit `http://localhost:8000`.
 Deploy `firestore.rules` in the Firebase console or with the Firebase CLI before enabling cloud sync. It restricts each document to its owner and caps stored progress data, which also limits accidental Firestore cost.
 
 The `vercel.json` headers add browser-side protections when deployed to Vercel.
+
+For Google sign-in, enable Google under Firebase Authentication → Sign-in method, add the deployed hostname under Authentication → Settings → Authorized domains, and set the Firebase web config variables in Vercel for the production environment.
