@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1117" />
+    <title>DSA Practice Board</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand"><span class="brand-mark">⌁</span><div><strong>DSA</strong><small>practice board</small></div></div>
+        <button class="mobile-close" id="closeSidebar" aria-label="Close navigation">×</button>
+        <nav class="nav-list" id="topicNav" aria-label="Topics"></nav>
+        <div class="sidebar-tip"><span>⌘</span><div><strong>Make it yours</strong><p>Your progress and notes stay in this browser.</p></div></div>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <button class="menu-button" id="openSidebar" aria-label="Open navigation">☰</button>
+          <div class="breadcrumb">Striver's SDE Sheet <span>/</span> <b id="crumbTopic">All problems</b></div>
+          <button class="reset-button" id="resetProgress">Reset progress</button>
+        </header>
+        <section class="hero">
+          <div><p class="eyebrow">YOUR INTERVIEW PREP WORKSPACE</p><h1>Build the habit.<br /><em>Crack the pattern.</em></h1><p class="hero-copy">A focused board for working through Striver's sheet, one problem at a time.</p></div>
+          <div class="hero-orbit"><div class="orbit-core"><strong id="heroPercent">0%</strong><span>complete</span></div><div class="orbit-dot dot-a"></div><div class="orbit-dot dot-b"></div></div>
+        </section>
+        <section class="stats-grid" aria-label="Progress summary">
+          <div class="stat-card accent"><span>Overall progress</span><strong id="totalProgress">0 / 455</strong><div class="progress-track"><i id="totalBar"></i></div></div>
+          <div class="stat-card"><span>Completed</span><strong id="completedCount">0</strong><small>problems solved</small></div>
+          <div class="stat-card"><span>To revisit</span><strong id="revisitCount">455</strong><small>still on your board</small></div>
+          <div class="stat-card"><span>Notes captured</span><strong id="notesCount">0</strong><small>ideas worth keeping</small></div>
+        </section>
+        <section class="workspace">
+          <div class="section-head"><div><p class="eyebrow">PRACTICE QUEUE</p><h2 id="queueTitle">All problems</h2></div><div class="view-toggle"><button class="active" data-view="all">All</button><button data-view="pending">Pending</button><button data-view="done">Completed</button></div></div>
+          <div class="toolbar"><label class="search"><span>⌕</span><input id="searchInput" placeholder="Search problems, topics or subtopics…" /></label><select id="difficultyFilter" aria-label="Filter by difficulty"><option value="all">All difficulties</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select><select id="sortSelect" aria-label="Sort problems"><option value="sheet">Sheet order</option><option value="difficulty">Difficulty</option><option value="topic">Topic</option></select></div>
+          <div class="queue-meta"><span id="resultCount">455 problems</span><span>Click a row to add a note</span></div>
+          <div class="problem-list" id="problemList"></div>
+          <div class="empty-state" id="emptyState" hidden><div>◌</div><h3>Nothing here yet</h3><p>Try clearing a filter or searching a different pattern.</p></div>
+        </section>
+      </main>
+    </div>
+    <div class="modal-backdrop" id="noteModal" hidden><div class="note-modal" role="dialog" aria-modal="true" aria-labelledby="noteTitle"><button class="modal-close" id="closeModal">×</button><p class="eyebrow">STUDY NOTE</p><h2 id="noteTitle"></h2><p class="modal-subtitle" id="noteMeta"></p><textarea id="noteInput" placeholder="Write the key idea, edge case, or follow-up…"></textarea><div class="modal-actions"><button class="ghost-button" id="cancelNote">Cancel</button><button class="primary-button" id="saveNote">Save note</button></div></div></div>
+    <script src="data.js"></script><script src="app.js"></script>
+  </body>
+</html>
