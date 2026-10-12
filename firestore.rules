@@ -3,22 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly([
-          'done', 'notes', 'starred', 'email', 'displayName',
-          'createdAt', 'lastUpdated'
-        ])
-        && request.resource.data.done is map
-        && request.resource.data.notes is map
-        && request.resource.data.starred is map
-        && request.resource.data.done.keys().size() <= 455
-        && request.resource.data.notes.keys().size() <= 455
-        && request.resource.data.starred.keys().size() <= 455
-        && request.resource.data.email is string
-        && request.resource.data.displayName is string
-        && request.resource.data.email.size() <= 320
-        && request.resource.data.displayName.size() <= 200;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

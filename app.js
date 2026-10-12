@@ -989,7 +989,9 @@ async function handleGoogleSignIn() {
   } catch (err) {
     console.error("Google sign-in error:", err);
     if (err.code === "auth/unauthorized-domain") {
-      showToast("Domain not authorized in Firebase! Add your domain in Firebase Console.", "⚠️");
+      showToast("Domain not authorized! Add your domain in Firebase Console -> Authorized domains.", "⚠️");
+    } else if (err.code === "auth/internal-error") {
+      showToast("Firebase internal error: Check authorized domain in Firebase Console.", "⚠️");
     } else if (err.code !== "auth/popup-closed-by-user") {
       showToast(err.message || "Sign-in error", "⚠️");
     }
@@ -1025,6 +1027,7 @@ async function initFirebase() {
     auth = getAuth(app);
     db = getFirestore(app);
     googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
