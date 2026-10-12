@@ -14,7 +14,7 @@ const els = {
   topicNav: document.querySelector('#topicNav'), list: document.querySelector('#problemList'), empty: document.querySelector('#emptyState'),
   title: document.querySelector('#queueTitle'), crumb: document.querySelector('#crumbTopic'), resultCount: document.querySelector('#resultCount'),
   search: document.querySelector('#searchInput'), difficulty: document.querySelector('#difficultyFilter'), sort: document.querySelector('#sortSelect'),
-  total: document.querySelector('#totalProgress'), completed: document.querySelector('#completedCount'), revisit: document.querySelector('#revisitCount'), notes: document.querySelector('#notesCount'),
+  total: document.querySelector('#totalProgress'), completed: document.querySelector('#completedCount'), revisit: document.querySelector('#revisitCount'), notes: document.querySelector('#notesCount'), railFocus: document.querySelector('#railFocus'), railFocusMeta: document.querySelector('#railFocusMeta'), difficultyBars: document.querySelector('#difficultyBars'), railDone: document.querySelector('#railDone'), railNotes: document.querySelector('#railNotes'),
   bar: document.querySelector('#totalBar'), percent: document.querySelector('#heroPercent'), modal: document.querySelector('#noteModal'), noteTitle: document.querySelector('#noteTitle'), noteMeta: document.querySelector('#noteMeta'), noteInput: document.querySelector('#noteInput')
 };
 
@@ -42,6 +42,8 @@ function render() {
   const notes = Object.values(state.notes).filter(Boolean).length;
   const percent = Math.round(completed / problems.length * 100);
   els.total.textContent = `${completed} / ${problems.length}`; els.completed.textContent = completed; els.revisit.textContent = problems.length - completed; els.notes.textContent = notes; els.bar.style.width = `${percent}%`; els.percent.textContent = `${percent}%`;
+  els.railFocus.textContent = activeTopic; els.railFocusMeta.textContent = `${list.length} problem${list.length === 1 ? '' : 's'} in this view`; els.railDone.textContent = `${completed} completed`; els.railNotes.textContent = `${notes} note${notes === 1 ? '' : 's'}`;
+  const difficultyColors = { Easy: 'easy', Medium: 'medium', Hard: 'hard' }; els.difficultyBars.innerHTML = ['Easy', 'Medium', 'Hard'].map(difficulty => { const total = problems.filter(p => p.difficulty === difficulty).length; const done = problems.filter(p => p.difficulty === difficulty && state.done[p.id]).length; return `<div class="bar-row"><div><span>${difficulty}</span><small>${done}/${total}</small></div><div class="bar-track"><i class="${difficultyColors[difficulty]}" style="width:${total ? done / total * 100 : 0}%"></i></div></div>`; }).join('');
 }
 function escapeHtml(value) { return String(value || '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c])); }
 function openNote(id) { const p = problems.find(item => item.id === id); noteId = id; els.noteTitle.textContent = p.name; els.noteMeta.textContent = `${p.topic} · ${p.difficulty} · #${p.id}`; els.noteInput.value = state.notes[id] || ''; els.modal.hidden = false; els.noteInput.focus(); }

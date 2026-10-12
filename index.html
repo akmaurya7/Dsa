@@ -34,12 +34,19 @@
           <div class="stat-card"><span>To revisit</span><strong id="revisitCount">455</strong><small>still on your board</small></div>
           <div class="stat-card"><span>Notes captured</span><strong id="notesCount">0</strong><small>ideas worth keeping</small></div>
         </section>
-        <section class="workspace">
+        <section class="workspace"><div class="queue-column">
           <div class="section-head"><div><p class="eyebrow">PRACTICE QUEUE</p><h2 id="queueTitle">All problems</h2></div><div class="view-toggle"><button class="active" data-view="all">All</button><button data-view="pending">Pending</button><button data-view="done">Completed</button></div></div>
           <div class="toolbar"><label class="search"><span>⌕</span><input id="searchInput" placeholder="Search problems, topics or subtopics…" /></label><select id="difficultyFilter" aria-label="Filter by difficulty"><option value="all">All difficulties</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select><select id="sortSelect" aria-label="Sort problems"><option value="sheet">Sheet order</option><option value="difficulty">Difficulty</option><option value="topic">Topic</option></select></div>
           <div class="queue-meta"><span id="resultCount">455 problems</span><span>Click a row to add a note</span></div>
           <div class="problem-list" id="problemList"></div>
           <div class="empty-state" id="emptyState" hidden><div>◌</div><h3>Nothing here yet</h3><p>Try clearing a filter or searching a different pattern.</p></div>
+          </div><aside class="insights-rail" aria-label="Study overview">
+            <div class="rail-heading"><span>STUDY OVERVIEW</span><i>LIVE</i></div>
+            <div class="focus-card"><span class="rail-label">CURRENT VIEW</span><strong id="railFocus">All problems</strong><p id="railFocusMeta">455 problems in your sheet</p></div>
+            <div class="rail-card"><div class="rail-card-head"><strong>Difficulty mix</strong><span>sheet</span></div><div id="difficultyBars"></div></div>
+            <div class="rail-card checklist"><div class="rail-card-head"><strong>Keep moving</strong><span>today</span></div><div class="check-row"><span class="check-icon">✓</span><div><strong id="railDone">1 completed</strong><small>Keep your streak alive</small></div></div><div class="check-row"><span class="note-icon">✎</span><div><strong id="railNotes">1 note</strong><small>Ideas saved for later</small></div></div></div>
+            <div class="rail-quote"><span>⌁</span><p>Small sessions compound. Pick one pattern and stay with it.</p></div>
+          </aside>
         </section>
       </main>
     </div>
