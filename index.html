@@ -1,56 +1,474 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0d1117" />
-    <title>DSA Practice Board</title>
+    <meta name="theme-color" content="#090d16" />
+    <title>Striver's A2Z DSA Tracker · Premium Interview Prep</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Background Ambient Aura -->
+    <div class="ambient-glow glow-1" aria-hidden="true"></div>
+    <div class="ambient-glow glow-2" aria-hidden="true"></div>
+    <div class="ambient-glow glow-3" aria-hidden="true"></div>
+    <canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
     <div class="app-shell">
+      <!-- SIDEBAR -->
       <aside class="sidebar" id="sidebar">
-        <div class="brand"><span class="brand-mark">⌁</span><div><strong>DSA</strong><small>practice board</small></div></div>
-        <button class="mobile-close" id="closeSidebar" aria-label="Close navigation">×</button>
-        <nav class="nav-list" id="topicNav" aria-label="Topics"></nav>
-        <div class="sidebar-tip"><span>⌘</span><div><strong>Make it yours</strong><p>Your progress and notes stay in this browser.</p></div></div>
+        <div class="sidebar-header">
+          <div class="brand">
+            <div class="brand-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <div class="brand-text">
+              <span class="brand-title">STRIVER A2Z</span>
+              <span class="brand-badge">SDE SHEET · 455</span>
+            </div>
+          </div>
+          <button class="icon-button mobile-only" id="closeSidebar" aria-label="Close navigation">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <!-- Sidebar Topic Filter & Search -->
+        <div class="sidebar-search">
+          <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="topicSearchInput" placeholder="Filter topics..." aria-label="Filter topics" />
+        </div>
+
+        <!-- Topic Categories Navigation -->
+        <div class="sidebar-scroll">
+          <div class="nav-section-label">TOPIC MODULES</div>
+          <nav class="nav-list" id="topicNav" aria-label="Topics list"></nav>
+        </div>
+
+        <!-- Sidebar Footer Action Panel -->
+        <div class="sidebar-footer">
+          <div class="storage-card">
+            <div class="storage-card-header">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              <span>Local Workspace</span>
+            </div>
+            <p>Your solved problems, starred marks, and notes are saved directly in browser storage.</p>
+            <div class="storage-actions">
+              <button class="footer-action-btn" id="exportBtn" title="Export progress as JSON">
+                <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Export
+              </button>
+              <button class="footer-action-btn" id="importBtn" title="Import progress from JSON">
+                <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Import
+              </button>
+              <input type="file" id="importFileInput" accept=".json" style="display:none" />
+            </div>
+          </div>
+        </div>
       </aside>
+
+      <!-- MAIN CONTAINER -->
       <main class="main">
+        <!-- TOPBAR -->
         <header class="topbar">
-          <button class="menu-button" id="openSidebar" aria-label="Open navigation">☰</button>
-          <div class="breadcrumb">Striver's SDE Sheet <span>/</span> <b id="crumbTopic">All problems</b></div>
-          <button class="reset-button" id="resetProgress">Reset progress</button>
+          <div class="topbar-left">
+            <button class="icon-button mobile-only" id="openSidebar" aria-label="Open navigation">
+              <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="breadcrumbs">
+              <span class="crumb-root">Striver's SDE Sheet</span>
+              <span class="crumb-divider">/</span>
+              <span class="crumb-current" id="crumbTopic">All problems</span>
+            </div>
+          </div>
+
+          <div class="topbar-right">
+            <!-- Daily Streak & Quick Stats -->
+            <div class="header-pill streak-pill" title="Current Daily Streak">
+              <span class="pill-icon">🔥</span>
+              <span class="streak-text" id="streakDisplay">Daily Goal: Active</span>
+            </div>
+
+            <!-- Random Problem Button -->
+            <button class="cta-pill-button" id="randomProblemBtn" title="Pick a random unsolved problem to practice">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="8" cy="8" r="1.5" fill="currentColor"></circle><circle cx="16" cy="8" r="1.5" fill="currentColor"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor"></circle><circle cx="8" cy="16" r="1.5" fill="currentColor"></circle><circle cx="16" cy="16" r="1.5" fill="currentColor"></circle></svg>
+              <span>Pick Random</span>
+            </button>
+
+            <!-- Theme Switcher -->
+            <button class="icon-button" id="themeToggle" title="Toggle Dark/Light theme" aria-label="Toggle theme">
+              <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+              <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+
+            <!-- Reset Button -->
+            <button class="ghost-btn" id="resetProgress" title="Reset all progress and notes">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+              <span>Reset</span>
+            </button>
+          </div>
         </header>
-        <section class="hero">
-          <div><p class="eyebrow">YOUR INTERVIEW PREP WORKSPACE</p><h1>Build the habit.<br /><em>Crack the pattern.</em></h1><p class="hero-copy">A focused board for working through Striver's sheet, one problem at a time.</p></div>
-          <div class="hero-orbit"><div class="orbit-core"><strong id="heroPercent">0%</strong><span>complete</span></div><div class="orbit-dot dot-a"></div><div class="orbit-dot dot-b"></div></div>
+
+        <!-- HERO COMMAND CENTER -->
+        <section class="hero-section">
+          <div class="hero-content">
+            <div class="hero-eyebrow">
+              <span class="eyebrow-dot"></span>
+              <span>INTERVIEW READINESS COCKPIT</span>
+            </div>
+            <h1 class="hero-title">
+              Crack the Code.<br />
+              <span class="gradient-text">Master Every Pattern.</span>
+            </h1>
+            <p class="hero-description">
+              The premier interactive workspace designed for Striver's 455 A2Z DSA sheet. Track solutions, annotate key algorithmic insights, and stay consistent.
+            </p>
+            <div class="hero-action-row">
+              <button class="primary-hero-btn" id="resumeNextBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                <span>Continue Next Unsolved</span>
+              </button>
+              <button class="secondary-hero-btn" id="viewStarredHeroBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                <span id="heroStarredLabel">Starred (0)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Circular Radial Progress Gauge -->
+          <div class="hero-gauge-wrapper">
+            <div class="radial-gauge-container">
+              <svg class="radial-gauge-svg" viewBox="0 0 160 160">
+                <defs>
+                  <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="50%" stop-color="#3b82f6" />
+                    <stop offset="100%" stop-color="#10b981" />
+                  </linearGradient>
+                  <filter id="gaugeGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="6" result="glow" />
+                    <feComposite in="SourceGraphic" in2="glow" operator="over" />
+                  </filter>
+                </defs>
+                <circle class="gauge-bg-circle" cx="80" cy="80" r="66"></circle>
+                <circle class="gauge-progress-circle" id="gaugeProgressCircle" cx="80" cy="80" r="66"></circle>
+              </svg>
+              <div class="gauge-center-content">
+                <span class="gauge-percentage" id="heroPercent">0%</span>
+                <span class="gauge-label">COMPLETED</span>
+                <span class="gauge-sublabel" id="heroFraction">0 / 455</span>
+              </div>
+            </div>
+            <div class="hero-mini-badges">
+              <div class="mini-badge easy-badge">
+                <span class="badge-dot"></span>
+                <span id="heroEasyCount">0/140 Easy</span>
+              </div>
+              <div class="mini-badge medium-badge">
+                <span class="badge-dot"></span>
+                <span id="heroMedCount">0/230 Med</span>
+              </div>
+              <div class="mini-badge hard-badge">
+                <span class="badge-dot"></span>
+                <span id="heroHardCount">0/85 Hard</span>
+              </div>
+            </div>
+          </div>
         </section>
-        <section class="stats-grid" aria-label="Progress summary">
-          <div class="stat-card accent"><span>Overall progress</span><strong id="totalProgress">0 / 455</strong><div class="progress-track"><i id="totalBar"></i></div></div>
-          <div class="stat-card"><span>Completed</span><strong id="completedCount">0</strong><small>problems solved</small></div>
-          <div class="stat-card"><span>To revisit</span><strong id="revisitCount">455</strong><small>still on your board</small></div>
-          <div class="stat-card"><span>Notes captured</span><strong id="notesCount">0</strong><small>ideas worth keeping</small></div>
+
+        <!-- STATS ANALYTICS CARDS -->
+        <section class="stats-grid" aria-label="Progress summary cards">
+          <div class="stat-card accent-card">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Overall Mastery</span>
+              <div class="stat-icon-wrap primary-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              </div>
+            </div>
+            <div class="stat-main-number" id="totalProgress">0 / 455</div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="totalBar" style="width: 0%"></div>
+            </div>
+            <div class="stat-footer-text">
+              <span id="overallPercentLabel">0% of the entire curriculum solved</span>
+            </div>
+          </div>
+
+          <div class="stat-card easy-stat-card">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Easy Problems</span>
+              <span class="difficulty-pill easy-pill">Easy</span>
+            </div>
+            <div class="stat-main-number" id="easyProgress">0 / 140</div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill easy-fill" id="easyBar" style="width: 0%"></div>
+            </div>
+            <div class="stat-footer-text" id="easyPercentLabel">0% completed</div>
+          </div>
+
+          <div class="stat-card medium-stat-card">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Medium Problems</span>
+              <span class="difficulty-pill medium-pill">Medium</span>
+            </div>
+            <div class="stat-main-number" id="mediumProgress">0 / 230</div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill medium-fill" id="mediumBar" style="width: 0%"></div>
+            </div>
+            <div class="stat-footer-text" id="medPercentLabel">0% completed</div>
+          </div>
+
+          <div class="stat-card hard-stat-card">
+            <div class="stat-card-top">
+              <span class="stat-card-title">Hard Problems</span>
+              <span class="difficulty-pill hard-pill">Hard</span>
+            </div>
+            <div class="stat-main-number" id="hardProgress">0 / 85</div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill hard-fill" id="hardBar" style="width: 0%"></div>
+            </div>
+            <div class="stat-footer-text" id="hardPercentLabel">0% completed</div>
+          </div>
         </section>
-        <section class="workspace"><div class="queue-column">
-          <div class="section-head"><div><p class="eyebrow">PRACTICE QUEUE</p><h2 id="queueTitle">All problems</h2></div><div class="view-toggle"><button class="active" data-view="all">All</button><button data-view="pending">Pending</button><button data-view="done">Completed</button></div></div>
-          <div class="toolbar"><label class="search"><span>⌕</span><input id="searchInput" placeholder="Search problems, topics or subtopics…" /></label><select id="difficultyFilter" aria-label="Filter by difficulty"><option value="all">All difficulties</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option></select><select id="sortSelect" aria-label="Sort problems"><option value="sheet">Sheet order</option><option value="difficulty">Difficulty</option><option value="topic">Topic</option></select></div>
-          <div class="queue-meta"><span id="resultCount">455 problems</span><span>Click a row to add a note</span></div>
-          <div class="problem-list" id="problemList"></div>
-          <div class="empty-state" id="emptyState" hidden><div>◌</div><h3>Nothing here yet</h3><p>Try clearing a filter or searching a different pattern.</p></div>
-          </div><aside class="insights-rail" aria-label="Study overview">
-            <div class="rail-heading"><span>STUDY OVERVIEW</span><i>LIVE</i></div>
-            <div class="focus-card"><span class="rail-label">CURRENT VIEW</span><strong id="railFocus">All problems</strong><p id="railFocusMeta">455 problems in your sheet</p></div>
-            <div class="rail-card"><div class="rail-card-head"><strong>Difficulty mix</strong><span>sheet</span></div><div id="difficultyBars"></div></div>
-            <div class="rail-card checklist"><div class="rail-card-head"><strong>Keep moving</strong><span>today</span></div><div class="check-row"><span class="check-icon">✓</span><div><strong id="railDone">1 completed</strong><small>Keep your streak alive</small></div></div><div class="check-row"><span class="note-icon">✎</span><div><strong id="railNotes">1 note</strong><small>Ideas saved for later</small></div></div></div>
-            <div class="rail-quote"><span>⌁</span><p>Small sessions compound. Pick one pattern and stay with it.</p></div>
+
+        <!-- MAIN WORKSPACE -->
+        <section class="workspace">
+          <!-- PRACTICE QUEUE COLUMN -->
+          <div class="queue-column">
+            <!-- Header & View Mode Switch -->
+            <div class="section-head">
+              <div class="section-titles">
+                <span class="section-eyebrow">CURATED PRACTICE REPOSITORY</span>
+                <h2 id="queueTitle">All Problems</h2>
+              </div>
+              <div class="head-controls">
+                <!-- Grouping mode toggle (Grouped vs Flat) -->
+                <div class="layout-toggle" role="group" aria-label="Layout toggle">
+                  <button class="layout-btn active" id="layoutGroupedBtn" title="Group by Topic & Subtopic">
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                    <span>Grouped</span>
+                  </button>
+                  <button class="layout-btn" id="layoutFlatBtn" title="Flat problem list">
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                    <span>Flat List</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Enhanced Filter & Toolbar -->
+            <div class="toolbar-container">
+              <!-- Search Box -->
+              <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input id="searchInput" placeholder="Search problems, topics, patterns... (Press / to search)" aria-label="Search problems" />
+                <button class="clear-search-btn" id="clearSearchBtn" aria-label="Clear search" hidden>×</button>
+                <span class="search-kbd-hint">/</span>
+              </div>
+
+              <!-- Quick Status Filters -->
+              <div class="status-filter-pills" role="tablist">
+                <button class="status-pill active" data-view="all">All <span class="pill-count" id="countAll">455</span></button>
+                <button class="status-pill" data-view="pending">⏳ Pending <span class="pill-count" id="countPending">455</span></button>
+                <button class="status-pill" data-view="done">✅ Solved <span class="pill-count" id="countDone">0</span></button>
+                <button class="status-pill" data-view="starred">⭐ Starred <span class="pill-count" id="countStarred">0</span></button>
+                <button class="status-pill" data-view="notes">📝 Notes <span class="pill-count" id="countNotes">0</span></button>
+              </div>
+
+              <!-- Secondary Row: Difficulty & Sort Controls -->
+              <div class="secondary-toolbar">
+                <div class="difficulty-chips">
+                  <span class="filter-label">Difficulty:</span>
+                  <button class="diff-chip active" data-difficulty="all">All</button>
+                  <button class="diff-chip diff-easy" data-difficulty="Easy">Easy</button>
+                  <button class="diff-chip diff-med" data-difficulty="Medium">Medium</button>
+                  <button class="diff-chip diff-hard" data-difficulty="Hard">Hard</button>
+                </div>
+
+                <div class="sort-wrapper">
+                  <span class="filter-label">Sort:</span>
+                  <select id="sortSelect" aria-label="Sort problems">
+                    <option value="sheet">Sheet Order</option>
+                    <option value="diff-asc">Difficulty (Easy → Hard)</option>
+                    <option value="diff-desc">Difficulty (Hard → Easy)</option>
+                    <option value="topic">Topic Category</option>
+                    <option value="name">Problem Name (A-Z)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Queue Meta & Actions Bar -->
+            <div class="queue-meta">
+              <div class="meta-left">
+                <span class="result-count" id="resultCount">455 problems</span>
+                <span class="meta-divider">•</span>
+                <span class="meta-subtext">Click any row to open or write study notes</span>
+              </div>
+              <div class="meta-right" id="groupAccordionControls">
+                <button class="text-action-btn" id="expandAllBtn">Expand All</button>
+                <span class="meta-divider">|</span>
+                <button class="text-action-btn" id="collapseAllBtn">Collapse All</button>
+              </div>
+            </div>
+
+            <!-- Problem List Container -->
+            <div class="problem-list" id="problemList"></div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" hidden>
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+              </div>
+              <h3>No matching problems found</h3>
+              <p>We couldn't find any questions matching your active filters or search query.</p>
+              <button class="primary-hero-btn" id="resetFiltersBtn">Reset All Filters</button>
+            </div>
+          </div>
+
+          <!-- STUDY INSIGHTS RIGHT RAIL -->
+          <aside class="insights-rail" aria-label="Study insights and momentum">
+            <div class="rail-card focus-topic-card">
+              <div class="rail-card-head">
+                <span class="rail-label">CURRENT ACTIVE VIEW</span>
+                <span class="live-tag">LIVE</span>
+              </div>
+              <strong class="focus-title" id="railFocus">All problems</strong>
+              <p class="focus-desc" id="railFocusMeta">455 curated problems</p>
+              <div class="focus-progress-wrapper">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" id="railFocusBar" style="width: 0%"></div>
+                </div>
+                <div class="focus-numbers">
+                  <span id="railFocusFraction">0 / 455 Solved</span>
+                  <span id="railFocusPercent">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Difficulty Distribution Breakdown -->
+            <div class="rail-card">
+              <div class="rail-card-head">
+                <span class="rail-title">Difficulty Breakdown</span>
+                <span class="rail-subtitle">Progress</span>
+              </div>
+              <div id="difficultyBars" class="difficulty-bars-list"></div>
+            </div>
+
+            <!-- Quick Revision Checklist -->
+            <div class="rail-card">
+              <div class="rail-card-head">
+                <span class="rail-title">Study Tracker</span>
+                <span class="rail-subtitle">Session</span>
+              </div>
+              <div class="checklist-items">
+                <div class="check-item-row">
+                  <div class="check-item-icon check-green">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  </div>
+                  <div class="check-item-text">
+                    <strong id="railDone">0 completed</strong>
+                    <small>Keep building the habit</small>
+                  </div>
+                </div>
+                <div class="check-item-row">
+                  <div class="check-item-icon check-gold">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                  </div>
+                  <div class="check-item-text">
+                    <strong id="railStarred">0 starred</strong>
+                    <small>Marked for rapid revision</small>
+                  </div>
+                </div>
+                <div class="check-item-row">
+                  <div class="check-item-icon check-purple">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  </div>
+                  <div class="check-item-text">
+                    <strong id="railNotes">0 notes saved</strong>
+                    <small>Retain core patterns & insights</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pro Tip / Mindset Card -->
+            <div class="rail-card quote-card">
+              <div class="quote-icon">💡</div>
+              <div class="quote-body">
+                <p id="motivationalQuote">"Consistent small daily sessions compound. Master the pattern, not just the solution."</p>
+                <button class="new-quote-btn" id="newQuoteBtn" title="Get another tip">Next Tip ↻</button>
+              </div>
+            </div>
           </aside>
         </section>
       </main>
     </div>
-    <div class="modal-backdrop" id="noteModal" hidden><div class="note-modal" role="dialog" aria-modal="true" aria-labelledby="noteTitle"><button class="modal-close" id="closeModal">×</button><p class="eyebrow">STUDY NOTE</p><h2 id="noteTitle"></h2><p class="modal-subtitle" id="noteMeta"></p><textarea id="noteInput" placeholder="Write the key idea, edge case, or follow-up…"></textarea><div class="modal-actions"><button class="ghost-button" id="cancelNote">Cancel</button><button class="primary-button" id="saveNote">Save note</button></div></div></div>
-    <script src="data.js"></script><script src="app.js"></script>
+
+    <!-- NOTE MODAL DIALOG -->
+    <div class="modal-backdrop" id="noteModal" hidden>
+      <div class="note-modal" role="dialog" aria-modal="true" aria-labelledby="noteTitle">
+        <button class="modal-close" id="closeModal" aria-label="Close modal">×</button>
+        <div class="modal-header">
+          <span class="modal-eyebrow">ALGORITHMIC STUDY NOTE</span>
+          <h2 id="noteTitle" class="modal-title">Problem Title</h2>
+          <div class="modal-tags" id="noteMeta"></div>
+        </div>
+
+        <div class="modal-body">
+          <div class="note-toolbar">
+            <span class="note-tip">Capture edge cases, time/space complexity, or Striver's intuition:</span>
+            <span class="note-char-count" id="noteCharCount">0 characters</span>
+          </div>
+          <textarea id="noteInput" placeholder="Write down your key takeaways, optimal intuition, edge cases, or pitfalls..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <div class="modal-footer-left">
+            <button class="ghost-btn delete-btn" id="deleteNoteBtn" title="Delete note">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Delete Note
+            </button>
+          </div>
+          <div class="modal-footer-right">
+            <button class="ghost-btn" id="cancelNote">Cancel</button>
+            <button class="primary-hero-btn" id="saveNote">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+              Save Note
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANDOM PROBLEM CHALLENGE MODAL -->
+    <div class="modal-backdrop" id="randomModal" hidden>
+      <div class="random-modal" role="dialog" aria-modal="true" aria-labelledby="randomModalTitle">
+        <button class="modal-close" id="closeRandomModal" aria-label="Close modal">×</button>
+        <div class="random-modal-header">
+          <div class="dice-badge">🎲</div>
+          <span class="modal-eyebrow">DAILY RANDOM CHALLENGE</span>
+          <h2 id="randomModalTitle" class="modal-title">Ready for your next challenge?</h2>
+        </div>
+        <div class="random-problem-card" id="randomCardContent">
+          <!-- Filled dynamically -->
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button class="ghost-btn" id="rollAgainBtn">Roll Another 🎲</button>
+          <button class="primary-hero-btn" id="solveRandomBtn">Go To Problem →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
   </body>
 </html>
